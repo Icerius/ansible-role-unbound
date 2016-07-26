@@ -19,8 +19,12 @@
   notify: restart unbound
   tags: ["configuration","unbound"]
 
+- name: Check if log file exists
+  stat: path={{unbound_logfile}}
+  register: logfile
+
 - name: Ensure log file exist
-  file: path={{unbound_logfile}} state=touch mode=755 owner=unbound
+  file: path={{unbound_logfile}} state={{ "file" if  logfile.stat.exists else "touch"}} mode=755 owner=unbound
   notify: restart unbound
   tags: ["configuration","unbound"]
 
@@ -47,6 +51,7 @@
   shell: /bin/ls /etc/unbound/conf.d/
   register: unbound_conf_list
   always_run: true
+  changed_when: false
   tags: ["configuration","unbound"]
 
 - name: configure unbound.conf to include all configuration
